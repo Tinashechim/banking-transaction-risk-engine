@@ -9,4 +9,10 @@ CREATE TABLE banking.customers (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+INSERT INTO banking.customers
+(first_name, last_name, email, phone)
+VALUES
+('John', 'Smith', 'john.smith@example.com', '0712345678');
+
+
 
