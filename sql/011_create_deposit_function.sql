@@ -19,7 +19,7 @@ BEGIN
     SET balance = balance + p_amount
     WHERE account_id = p_account_id;
 
-    -- ROW_COUNT tells us how many rows the previous statement affected.
+    -- FOUND is false when the UPDATE does not match an account.
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Account % does not exist', p_account_id;
     END IF;
