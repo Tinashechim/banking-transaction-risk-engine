@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment variables / secrets
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# PostgreSQL/local database files
+*.sql.tmp
+*.backup
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
