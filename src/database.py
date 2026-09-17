@@ -1,5 +1,8 @@
 import os
+import time
 import psycopg
+
+from psycopg.errors import DeadlockDetected, SerializationFailure 
 
 DB_HOST = "localhost"
 DB_PORT = 5432
@@ -21,3 +24,27 @@ def get_connection():
         user=DB_USER,
         password=DB_PASSWORD,
     )
+
+#retry function
+def run_with_retry(operation, max_attempts=3):
+    for attempt in range(1, max_attempts + 1):
+        conn = None
+
+        try:
+            conn = get_connection()
+            result = operation(conn)
+            conn.commit()
+            return result
+
+        except (SerializationFailure, DeadlockDetected):
+            if conn:
+                conn.rollback()
+
+            if attempt == max_attempts:
+                raise
+
+            time.sleep(attempt)
+
+        finally:
+            if conn:
+                conn.close()
