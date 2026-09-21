@@ -2,13 +2,14 @@ import os
 import time
 import psycopg
 
-from psycopg.errors import DeadlockDetected, SerializationFailure 
+from psycopg.errors import DeadlockDetected, SerializationFailure
 
 DB_HOST = "localhost"
 DB_PORT = 5432
 DB_NAME = "banking_risk_engine"
 DB_USER = "bank_app"
 DB_PASSWORD = os.environ.get("BANK_DB_PASSWORD")
+
 
 # Creates and returns a connection to the PostgreSQL database.
 def get_connection():
@@ -25,7 +26,8 @@ def get_connection():
         password=DB_PASSWORD,
     )
 
-#retry function
+
+# Retry function
 def run_with_retry(operation, max_attempts=3):
     for attempt in range(1, max_attempts + 1):
         conn = None
@@ -44,6 +46,12 @@ def run_with_retry(operation, max_attempts=3):
                 raise
 
             time.sleep(attempt)
+
+        except Exception:
+            if conn:
+                conn.rollback()
+
+            raise
 
         finally:
             if conn:
