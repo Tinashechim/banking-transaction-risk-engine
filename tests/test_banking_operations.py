@@ -100,6 +100,35 @@ def test_transfer():
 
     assert total_after == total_before
 
+def test_transfer_insufficient_funds():
+    from_account_id = 1
+    to_account_id = 4
+    amount = Decimal("100000.00")
+    reference = f"TEST-TRF-FAIL-{uuid4().hex[:8]}"
+
+    from_balance_before = get_balance(from_account_id)
+    to_balance_before = get_balance(to_account_id)
+
+    try:
+        transfer_funds(
+            from_account_id,
+            to_account_id,
+            amount,
+            reference,
+        )
+
+    except RaiseException:
+        pass
+
+    else:
+        raise AssertionError("Transfer should have failed")
+
+    from_balance_after = get_balance(from_account_id)
+    to_balance_after = get_balance(to_account_id)
+
+    assert from_balance_after == from_balance_before
+    assert to_balance_after == to_balance_before
+
 
 if __name__ == "__main__":
     test_deposit()
@@ -113,3 +142,6 @@ if __name__ == "__main__":
 
     test_transfer()
     print("Transfer test passed")
+
+    test_transfer_insufficient_funds()
+    print("Transfer insufficient funds test passed")
