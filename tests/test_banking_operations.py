@@ -5,6 +5,7 @@ from psycopg.errors import RaiseException
 
 from src.deposits import deposit_funds
 from src.withdrawals import withdraw_funds
+from src.transfers import transfer_funds
 from src.database import get_connection
 
 
@@ -72,6 +73,33 @@ def test_insufficient_funds():
 
     assert balance_after == balance_before
 
+def test_transfer():
+    from_account_id = 1
+    to_account_id = 4
+    amount = Decimal("10.00")
+    reference = f"TEST-TRF-{uuid4().hex[:8]}"
+
+    from_balance_before = get_balance(from_account_id)
+    to_balance_before = get_balance(to_account_id)
+
+    transfer_funds(
+        from_account_id,
+        to_account_id,
+        amount,
+        reference,
+    )
+
+    from_balance_after = get_balance(from_account_id)
+    to_balance_after = get_balance(to_account_id)
+
+    assert from_balance_after == from_balance_before - amount
+    assert to_balance_after == to_balance_before + amount
+
+    total_before = from_balance_before + to_balance_before
+    total_after = from_balance_after + to_balance_after
+
+    assert total_after == total_before
+
 
 if __name__ == "__main__":
     test_deposit()
@@ -82,3 +110,6 @@ if __name__ == "__main__":
 
     test_insufficient_funds()
     print("Insufficient funds test passed")
+
+    test_transfer()
+    print("Transfer test passed")
