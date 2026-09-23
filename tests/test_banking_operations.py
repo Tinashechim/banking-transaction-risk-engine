@@ -25,6 +25,54 @@ def get_balance(account_id):
     finally:
         conn.close()
 
+ # verify transaction records
+def get_transfer(reference):
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    from_account_id,
+                    to_account_id,
+                    amount,
+                    status
+                FROM banking.transfers
+                WHERE reference = %s
+                """,
+                (reference,),
+            )
+
+            return cur.fetchone()
+
+    finally:
+        conn.close()
+
+#helper to verify two transaction ledger entries
+def get_transaction(reference):
+    conn = get_connection()
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    account_id,
+                    transaction_type,
+                    amount,
+                    reference
+                FROM banking.transactions
+                WHERE reference = %s
+                """,
+                (reference,),
+            )
+
+            return cur.fetchone()
+
+    finally:
+        conn.close()
+
 
 def test_deposit():
     account_id = 1
@@ -100,6 +148,28 @@ def test_transfer():
 
     assert total_after == total_before
 
+    transfer = get_transfer(reference)
+
+    assert transfer is not None
+    assert transfer[0] == from_account_id
+    assert transfer[1] == to_account_id
+    assert transfer[2] == amount
+    assert transfer[3] == "COMPLETED"
+
+    outgoing_transaction = get_transaction(reference + "-OUT")
+    incoming_transaction = get_transaction(reference + "-IN")
+
+    assert outgoing_transaction is not None
+    assert incoming_transaction is not None
+
+    assert outgoing_transaction[0] == from_account_id
+    assert outgoing_transaction[1] == "TRANSFER_OUT"
+    assert outgoing_transaction[2] == amount
+
+    assert incoming_transaction[0] == to_account_id
+    assert incoming_transaction[1] == "TRANSFER_IN"
+    assert incoming_transaction[2] == amount
+
 def test_transfer_insufficient_funds():
     from_account_id = 1
     to_account_id = 4
@@ -128,6 +198,14 @@ def test_transfer_insufficient_funds():
 
     assert from_balance_after == from_balance_before
     assert to_balance_after == to_balance_before
+
+    transfer = get_transfer(reference)
+    outgoing_transaction = get_transaction(reference + "-OUT")
+    incoming_transaction = get_transaction(reference + "-IN")
+
+    assert transfer is None
+    assert outgoing_transaction is None
+    assert incoming_transaction is None
 
 
 if __name__ == "__main__":
