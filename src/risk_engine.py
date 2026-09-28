@@ -25,6 +25,17 @@ def get_active_risk_rules():
     finally:
         conn.close()
 
+#Risk score classificiation
+def classify_risk_score(risk_score):
+    if risk_score >= 60:
+        return "HIGH"
+
+    if risk_score >= 30:
+        return "MEDIUM"
+
+    return "LOW"
+
+
 def evaluate_transaction(amount):
     rules = get_active_risk_rules()
     triggered_rules = []
@@ -46,6 +57,7 @@ def evaluate_transaction(amount):
                     "risk_rule_id": risk_rule_id,
                     "rule_name": rule_name,
                     "risk_score": risk_score,
+                    "risk_level": classify_risk_score(risk_score),
                 }
             )
 
