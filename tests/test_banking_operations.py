@@ -87,6 +87,15 @@ def test_deposit():
 
     assert balance_after == balance_before + amount
 
+#Verify balance and the ledger
+    transaction = get_transaction(reference)
+
+    assert transaction is not None
+    assert transaction[0] == account_id
+    assert transaction[1] == "DEPOSIT"
+    assert transaction[2] == amount
+    assert transaction[3] == reference
+
 
 def test_withdrawal():
     account_id = 1
@@ -100,6 +109,14 @@ def test_withdrawal():
     balance_after = get_balance(account_id)
 
     assert balance_after == balance_before - amount
+
+    transaction = get_transaction(reference)
+
+    assert transaction is not None
+    assert transaction[0] == account_id
+    assert transaction[1] == "WITHDRAWAL"
+    assert transaction[2] == amount
+    assert transaction[3] == reference
 
 def test_insufficient_funds():
     account_id = 1
@@ -120,6 +137,10 @@ def test_insufficient_funds():
     balance_after = get_balance(account_id)
 
     assert balance_after == balance_before
+
+    transaction = get_transaction(reference)
+
+    assert transaction is None
 
 def test_transfer():
     from_account_id = 1
