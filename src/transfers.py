@@ -1,6 +1,5 @@
 from src.database import run_with_retry
-
-
+from src.risk_engine import evaluate_transaction 
 # Transfer function
 def transfer_funds(from_account_id, to_account_id, amount, reference):
     def operation(conn):
@@ -16,5 +15,9 @@ def transfer_funds(from_account_id, to_account_id, amount, reference):
                 (from_account_id, to_account_id, amount, reference),
             )
 
-    return run_with_retry(operation)
+    result = run_with_retry(operation)
+
+    evaluate_transaction(amount, reference)
+
+    return result
 
